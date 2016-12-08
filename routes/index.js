@@ -147,7 +147,7 @@ module.exports = function (app, addon) {
   app.post('/webhook',
     addon.authenticate(),
     function (req, res) {
-      hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'pong')
+      hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'hello')
         .then(function (data) {
           res.sendStatus(200);
         });
