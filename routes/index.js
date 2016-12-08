@@ -200,6 +200,43 @@ module.exports = function (app, addon) {
         }
       });
 
+  app.post('/status',
+    addon.authenticate(),
+    function (req, res) {
+        var message = req.body.item.message.message;
+        var job_name = message.replace(/^\/status /, '');
+        jenkins.job.get(job_name, function(err, data) {
+            if (err) throw err;
+
+            // console.log('job', data);
+            // console.log('job', data.lastSuccessfulBuild);
+            var buildStatus = 'Failed';
+            var color = 'red';
+            if (data.lastBuild.number != data.lastCompletedBuild.number) {
+                buildStatus = 'In Progress';
+                color = 'yellow';
+            }
+            else {
+                if (data.lastCompletedBuild.number == data.lastSuccessfulBuild.number) {
+                    buildStatus = 'Successful';
+                    color = 'green';
+                }
+            }
+
+            var opts = { 'options': { 'color': color, 'message_format': 'html', 'notify':'false' } };
+
+            hipchat.sendMessage(
+                req.clientInfo,
+                req.identity.roomId,
+                'Status: <strong>' + buildStatus + '</strong>',
+                opts
+                )
+                .then(function (data) {
+                    res.sendStatus(200);
+                });
+        });
+    });
+
   // Notify the room that the add-on was installed. To learn more about
   // Connect's install flow, check out:
   // https://developer.atlassian.com/hipchat/guide/installation-flow

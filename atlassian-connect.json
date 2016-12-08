@@ -49,6 +49,13 @@
         "event": "room_message",
         "name": "Deploy",
         "authentication": "jwt"
+      },
+      {
+        "url": "{{localBaseUrl}}/status",
+        "pattern": "^/[Ss][Tt][Aa][Tt][Uu][Ss] .+",
+        "event": "room_message",
+        "name": "Status",
+        "authentication": "jwt"
       }
     ],
 
