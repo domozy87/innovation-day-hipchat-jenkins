@@ -166,7 +166,7 @@ module.exports = function (app, addon) {
 
       if(req.body.event === "room_message") {
         var message = req.body.item.message.message;
-        var job_name = message.replace(/^\/build /, '');
+        var job_name = message.replace(/^\/ci build /, '');
           jenkins.job.build(job_name, function(err, data) {
               if (err) throw err;
               console.log('queue item number', data);
@@ -177,6 +177,28 @@ module.exports = function (app, addon) {
           });
       }
     });
+
+  // This is an example route to handle an incoming webhook
+  // https://developer.atlassian.com/hipchat/guide/webhooks
+  app.post('/deploy',
+      addon.authenticate(),
+      function (req, res) {
+
+        if(req.body.event === "room_message") {
+          var message = req.body.item.message.message;
+          var job_name = message.replace(/^\/ci deploy /, '');
+
+          console.log(job_name)
+          // jenkins.job.build(job_name, function(err, data) {
+          //   if (err) throw err;
+          //   console.log('queue item number', data);
+          //   hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'JOB name <' + job_name + '> has been successfully triggered!!!')
+          //       .then(function (data) {
+          //         res.sendStatus(200);
+          //       });
+          // });
+        }
+      });
 
   // Notify the room that the add-on was installed. To learn more about
   // Connect's install flow, check out:

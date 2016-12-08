@@ -38,9 +38,16 @@
       },
       {
         "url": "{{localBaseUrl}}/build",
-        "pattern": "^/[Bb][Uu][Ii][Ll][Dd] .+",
+        "pattern": "^/[Cc][Ii] [Bb][Uu][Ii][Ll][Dd] .+",
         "event": "room_message",
         "name": "Build",
+        "authentication": "jwt"
+      },
+      {
+        "url": "{{localBaseUrl}}/deploy",
+        "pattern": "^/[Cc][Ii] [Dd][Ee][Pp][Ll][Oo][Yy] .+",
+        "event": "room_message",
+        "name": "Deploy",
         "authentication": "jwt"
       }
     ],
