@@ -144,15 +144,22 @@ module.exports = function (app, addon) {
 
   // This is an example route to handle an incoming webhook
   // https://developer.atlassian.com/hipchat/guide/webhooks
-  app.post('/webhook',
+  app.post('/build',
     addon.authenticate(),
     function (req, res) {
-      hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'pong')
-        .then(function (data) {
-          res.sendStatus(200);
-        });
-    }
-    );
+
+
+      if(req.body.event === "room_message") {
+        var message = req.body.item.message.message;
+        var job_id = message.replace(/^\/build /, '');
+
+        hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'JOB ID is ' + job_id)
+          .then(function (data) {
+            res.sendStatus(200);
+          });
+      }   
+      
+    });
 
   // Notify the room that the add-on was installed. To learn more about
   // Connect's install flow, check out:
