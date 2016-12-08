@@ -2,6 +2,7 @@ var http = require('request');
 var cors = require('cors');
 var uuid = require('uuid');
 var url = require('url');
+var jenkins = require('jenkins')({ baseUrl: 'https://stoplight:Pass0n16Dec2013@ci.web-essentials.asia', crumbIssuer: false });
 
 // This is the heart of your HipChat Connect add-on. For more information,
 // take a look at https://developer.atlassian.com/hipchat/tutorials/getting-started-with-atlassian-connect-express-node-js
@@ -165,11 +166,14 @@ module.exports = function (app, addon) {
 
       if(req.body.event === "room_message") {
         var message = req.body.item.message.message;
-        var job_id = message.replace(/^\/build /, '');
-
-        hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'JOB ID is ' + job_id)
-          .then(function (data) {
-            res.sendStatus(200);
+        var job_name = message.replace(/^\/build /, '');
+          jenkins.job.build(job_name, function(err, data) {
+              if (err) throw err;
+              console.log('queue item number', data);
+              hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'JOB name <' + job_name + '> has been successfully triggered!!!')
+                  .then(function (data) {
+                      res.sendStatus(200);
+                  });
           });
       }
     });
