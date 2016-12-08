@@ -52,7 +52,7 @@
       },
       {
         "url": "{{localBaseUrl}}/status",
-        "pattern": "^/[Ss][Tt][Aa][Tt][Uu][Ss] .+",
+        "pattern": "^/[Cc][Ii] [Ss][Tt][Aa][Tt][Uu][Ss] .+",
         "event": "room_message",
         "name": "Status",
         "authentication": "jwt"
