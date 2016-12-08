@@ -148,7 +148,6 @@ module.exports = function (app, addon) {
     addon.authenticate(),
     function (req, res) {
 
-
       if(req.body.event === "room_message") {
         var message = req.body.item.message.message;
         var job_id = message.replace(/^\/build /, '');
