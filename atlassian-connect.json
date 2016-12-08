@@ -30,21 +30,21 @@
 
     "webhook": [
       {
+        "url": "{{localBaseUrl}}/hi",
+        "pattern": "^/[Hh][Ii]",
+        "event": "room_message",
+        "name": "Hi",
+        "authentication": "jwt"
+      },
+      {
         "url": "{{localBaseUrl}}/build",
         "pattern": "^/[Bb][Uu][Ii][Ll][Dd] .+",
         "event": "room_message",
         "name": "Build",
         "authentication": "jwt"
-      },
-      {
-        "url": "{{localBaseUrl}}/webhook",
-        "pattern": "^/hi",
-        "event": "room_message",
-        "name": "Hi!",
-        "authentication": "jwt"
       }
     ],
-    
+
     "glance": [
       {
         "name": {

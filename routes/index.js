@@ -144,6 +144,21 @@ module.exports = function (app, addon) {
 
   // This is an example route to handle an incoming webhook
   // https://developer.atlassian.com/hipchat/guide/webhooks
+  app.post('/hi',
+      addon.authenticate(),
+      function (req, res) {
+
+        if(req.body.event === "room_message") {
+          var username = req.body.item.message.from.mention_name;
+          hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Hello ' + username)
+              .then(function (data) {
+                res.sendStatus(200);
+              });
+        }
+      });
+
+  // This is an example route to handle an incoming webhook
+  // https://developer.atlassian.com/hipchat/guide/webhooks
   app.post('/build',
     addon.authenticate(),
     function (req, res) {
@@ -156,8 +171,7 @@ module.exports = function (app, addon) {
           .then(function (data) {
             res.sendStatus(200);
           });
-      }   
-      
+      }
     });
 
   // Notify the room that the add-on was installed. To learn more about
