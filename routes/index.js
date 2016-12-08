@@ -167,16 +167,33 @@ module.exports = function (app, addon) {
 		function (req, res) {
 
 			if (req.body.event === "room_message") {
+                var username = req.body.item.message.from.mention_name;
 				var message = req.body.item.message.message;
 				var job_name = message.replace(/^\/ci build /, '');
-				jenkins.job.build(job_name, function (err, data) {
-					if (err) throw err;
-					console.log('queue item number', data);
-					hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> has been successfully triggered!')
-						.then(function (data) {
-							res.sendStatus(200);
-						});
-				});
+                if (job_name) {
+                    jenkins.job.exists(job_name, function(err, exists) {
+                        if (exists) {
+                            jenkins.job.build(job_name, function (err, data) {
+                                if (err) throw err;
+                                console.log('queue item number', data);
+                                hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> has been successfully triggered!')
+                                    .then(function (data) {
+                                        res.sendStatus(200);
+                                    });
+                            });
+                        } else {
+                            hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> does not exist.')
+                                .then(function (data) {
+                                    res.sendStatus(200);
+                                });
+                        }
+                    });
+                } else {
+                    hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> is invalid.')
+                        .then(function (data) {
+                            res.sendStatus(200);
+                        });
+                }
 			}
 		});
 
