@@ -120,7 +120,6 @@ module.exports = function (app, addon) {
               if (exists) {
                   jenkins.view.get(view_name, function (err, data) {
                       if (err) throw err;
-                      // console.log('data received:', data);
 
                       //only get the freestyle jobs for now
                       var freestyleJobs = _.filter(data.jobs, ['_class', 'hudson.model.FreeStyleProject']);
@@ -138,8 +137,7 @@ module.exports = function (app, addon) {
                           }
                       }); 
 
-                      console.log(freestyleJobs);
-
+                      //render the sidebar
                       res.render('sidebar', {
                           identity: req.identity,
                           jobs: freestyleJobs
@@ -150,7 +148,7 @@ module.exports = function (app, addon) {
               }
           });
       } else {
-
+		console.log('view name wasn\'t supplied');
       }
 
 
