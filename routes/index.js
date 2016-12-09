@@ -25,7 +25,7 @@ module.exports = function (app, addon) {
 
 	var getJenkins = function (obj, username) {
 		var tokens = jenkinsToken.token;
-		if (username.toLowerCase() == 'jdevenny') username = 'oudom';
+		
 		for(var i = 0; i < tokens.length; i++) {
 			if (tokens[i].username.toLowerCase() == username.toLowerCase()) {
 				jenkinsBaseUrl.username = username;
@@ -137,6 +137,7 @@ module.exports = function (app, addon) {
 				console.log ('rendering sidebar with ' + name);
 
 				if (name) {
+					jenkins = getJenkins(jenkinsBaseUrl, 'oudom');
 					jenkins.view.exists(name, function(err, exists) {
 					  if (exists) {
 					      jenkins.view.get(name, function (err, data) {
