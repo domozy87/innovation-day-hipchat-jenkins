@@ -124,7 +124,7 @@ module.exports = function (app, addon) {
 
                   });
               } else {
-                
+                  console.log('view does not exist');
               }
           });
       } else {
