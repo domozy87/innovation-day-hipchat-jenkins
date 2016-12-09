@@ -128,7 +128,7 @@ module.exports = function (app, addon) {
               }
           });
       } else {
-        
+
       }
 
 
@@ -171,93 +171,108 @@ module.exports = function (app, addon) {
 		}
 	);
 
-	// This is an example route to handle an incoming webhook
-	// https://developer.atlassian.com/hipchat/guide/webhooks
-	app.post('/hi',
-		addon.authenticate(),
-		function (req, res) {
+  // This is an example route to handle an incoming webhook
+  // https://developer.atlassian.com/hipchat/guide/webhooks
+  app.post('/hi',
+    addon.authenticate(),
+    function (req, res) {
 
-			if (req.body.event === "room_message") {
-				var username = req.body.item.message.from.mention_name;
-				hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Hello ' + username)
-					.then(function (data) {
-						res.sendStatus(200);
-					});
-			}
-		});
-
-	// This is an example route to handle an incoming webhook
-	// https://developer.atlassian.com/hipchat/guide/webhooks
-	app.post('/build',
-		addon.authenticate(),
-		function (req, res) {
-
-			if (req.body.event === "room_message") {
+      if (req.body.event === "room_message") {
         var username = req.body.item.message.from.mention_name;
-				var message = req.body.item.message.message;
-				var job_name = message.replace(/^\/ci build /, '');
-				var color = 'red';
-                if (job_name) {
-                    jenkins.job.exists(job_name, function(err, exists) {
-                        if (exists) {
-                            jenkins.job.build(job_name, function (err, data) {
-                                if (err) throw err;
-                                console.log('queue item number', data);
-	                            color = 'green'
-	                            var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
-                                hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> has been successfully triggered by <' + username + '>', opts)
-                                    .then(function (data) {
-                                        res.sendStatus(200);
-                                    });
-                            });
-                        } else {
-	                        var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
-                            hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> does not exist.', opts)
-                                .then(function (data) {
-                                    res.sendStatus(200);
-                                });
-                        }
-                    });
-                } else {
-	                var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
-                    hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> is invalid.', opts)
-                        .then(function (data) {
-                            res.sendStatus(200);
-                        });
-                }
-			}
-		});
+        hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Hello ' + username)
+          .then(function (data) {
+            res.sendStatus(200);
+          });
+      }
+    });
 
-	// This is an example route to handle an incoming webhook
-	// https://developer.atlassian.com/hipchat/guide/webhooks
-	app.post('/deploy',
-		addon.authenticate(),
-		function (req, res) {
+  // This is an example route to handle an incoming webhook
+  // https://developer.atlassian.com/hipchat/guide/webhooks
+  app.post('/hello',
+    addon.authenticate(),
+    function (req, res) {
 
-            if (req.body.event === "room_message") {
-                var message = req.body.item.message.message;
-                var project_name = message.replace(/^\/ci deploy /, '');
+      if (req.body.event === "room_message") {
+        var username = req.body.item.message.from.mention_name;
+        hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Hi ' + username)
+          .then(function (data) {
+            res.sendStatus(200);
+          });
+      }
+    });
 
-                jenkins.view.exists(project_name + '/pipeline', function (err, exists) {
-                    if (err) throw err;
-                    if (exists) {
-                        jenkins.job.build(project_name + '/build', function (err, data) {
-                            if (err) throw err;
-                            console.log('queue item number', data);
-                            hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Pipeline build for project <' + project_name + '> has been successfully triggered!')
-                                .then(function (data) {
-                                    res.sendStatus(200);
-                                });
-                        });
-                    } else {
-                        hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Pipeline for <' + project_name + '> does not exist!')
-                            .then(function (data) {
-                                res.sendStatus(200);
-                            });
-                    }
+  // This is an example route to handle an incoming webhook
+  // https://developer.atlassian.com/hipchat/guide/webhooks
+  app.post('/build',
+    addon.authenticate(),
+    function (req, res) {
+
+      if (req.body.event === "room_message") {
+        var username = req.body.item.message.from.mention_name;
+        var message = req.body.item.message.message;
+        var job_name = message.replace(/^\/ci build /, '');
+        var color = 'red';
+        if (job_name) {
+          jenkins.job.exists(job_name, function (err, exists) {
+            if (exists) {
+              jenkins.job.build(job_name, function (err, data) {
+                if (err) throw err;
+                console.log('queue item number', data);
+                color = 'green'
+                var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
+                hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> has been successfully triggered by <' + username + '>', opts)
+                  .then(function (data) {
+                    res.sendStatus(200);
+                  });
+              });
+            } else {
+              var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
+              hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> does not exist.', opts)
+                .then(function (data) {
+                  res.sendStatus(200);
                 });
             }
+          });
+        } else {
+          var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
+          hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> is invalid.', opts)
+            .then(function (data) {
+              res.sendStatus(200);
+            });
+        }
+      }
+    });
+
+  // This is an example route to handle an incoming webhook
+  // https://developer.atlassian.com/hipchat/guide/webhooks
+  app.post('/deploy',
+    addon.authenticate(),
+    function (req, res) {
+
+      if (req.body.event === "room_message") {
+        var message = req.body.item.message.message;
+        var project_name = message.replace(/^\/ci deploy /, '');
+
+        jenkins.view.exists(project_name + '/pipeline', function (err, exists) {
+          if (err) throw err;
+          if (exists) {
+            jenkins.job.build(project_name + '/build', function (err, data) {
+              if (err) throw err;
+              console.log('queue item number', data);
+              hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Pipeline build for project <' + project_name + '> has been successfully triggered!')
+                .then(function (data) {
+                  res.sendStatus(200);
+                });
+            });
+          } else {
+            hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Pipeline for <' + project_name + '> does not exist!')
+              .then(function (data) {
+                res.sendStatus(200);
+              });
+          }
         });
+      }
+    });
 
 	app.post('/status',
 		addon.authenticate(),
