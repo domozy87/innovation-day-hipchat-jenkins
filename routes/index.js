@@ -25,7 +25,7 @@ module.exports = function (app, addon) {
 
 	var getJenkins = function (obj, username) {
 		var tokens = jenkinsToken.token;
-		
+
 		for(var i = 0; i < tokens.length; i++) {
 			if (tokens[i].username.toLowerCase() == username.toLowerCase()) {
 				jenkinsBaseUrl.username = username;
@@ -37,6 +37,27 @@ module.exports = function (app, addon) {
 			baseUrl: 'https://' + obj.username + ':' + obj.token + obj.domain
 		});
 		return jenkinsObject;
+	};
+
+	var getColorByStatus = function(status, color_index) {
+		console.log(status);
+		var statuses = {
+			'notbuilt': ['No Built', 'grey', '#f5f5f5'],
+			'disabled': ['Disabled', 'black', '#707070'],
+			'blue': ['Successful', 'green', '#14892c'],
+			'blue_anime': ['In Progress', 'yellow'],
+			'yellow': ['Unstable', 'yellow', 'yellow'],
+			'red': ['Failed', 'red', '#d04437'],
+			'aborted': ['Aborted', 'brown', 'brown']
+		};
+		if (color_index == undefined || statuses[color_index] == undefined || color_index < 1) {
+			color_index = 1;
+		}
+		return {
+			'code': status,
+			'status': statuses[status][0],
+			'color': statuses[status][color_index]
+		};
 	};
 
 	// simple healthcheck
@@ -148,15 +169,8 @@ module.exports = function (app, addon) {
 
 					          //change the colours of the job status, as Jenkins defaults are shit
 					          _.forEach(freestyleJobs, function(value, key){
-					              if(value.color === 'blue'){
-					                value.color = '#14892c';
-					              } else if (value.color === 'notbuilt'){
-					                value.color = '#f5f5f5'
-					              } else if (value.color === 'red'){
-					                value.color = '#d04437'
-					              } else if (value.color === 'disabled'){
-					                value.color = '#707070'
-					              }
+						          var statusColor = getColorByStatus(value.color,2);
+						          value.color = statusColor['color'];
 					          });
 
 					          //don't care about the /All on the end of the 'view' name. Handling internally only
@@ -340,64 +354,24 @@ module.exports = function (app, addon) {
 			var username = req.body.item.message.from.mention_name;
 			var job_name = message.replace(/^\/ci status /, '');
 			if (job_name) {
-				var buildNo = '';
-				var job_names = job_name.split(/\s+/);
-				if (job_names.length === 2) {
-					job_name = job_names[0];
-					buildNo = job_names[1];
-				}
 				jenkins = getJenkins(jenkinsBaseUrl, username);
 				jenkins.job.exists(job_name, function (err, exists) {
 					if (exists) {
-						if (buildNo.length) {
-							jenkins.build.get(job_name, buildNo, function (err, data) {
-								console.log(data);
-								var buildStatus = {
-									'red': 'Failed',
-									'green': 'Successful',
-									'yellow': 'In Progress',
-									'grey': 'Not Built'
-								};
-								if (data.color == 'blue') {
-									data.color = 'green';
-								}
+						jenkins.job.get(job_name, function (err, data) {
 
-								var opts = {'options': {'color': data.color, 'message_format': 'html', 'notify': 'false'}};
+							var status = getColorByStatus(data.color);
 
-								hipchat.sendMessage(
-									req.clientInfo,
-									req.identity.roomId,
-									'Status: <strong>' + buildStatus[data.color] + '</strong>',
-									opts )
-									.then(function (data) {
-										res.sendStatus(200);
-									});
-							});
-						} else {
-							jenkins.job.get(job_name, function (err, data) {
+							var opts = {'options': {'color': status['color'], 'message_format': 'html', 'notify': 'false'}};
 
-								var buildStatus = {
-									'red': 'Failed',
-									'green': 'Successful',
-									'yellow': 'In Progress',
-									'grey': 'Not Built'
-								};
-								if (data.color == 'blue') {
-									data.color = 'green';
-								}
-
-								var opts = {'options': {'color': data.color, 'message_format': 'html', 'notify': 'false'}};
-
-								hipchat.sendMessage(
-									req.clientInfo,
-									req.identity.roomId,
-									'Status: <strong>' + buildStatus[data.color] + '</strong>',
-									opts )
-									.then(function (data) {
-										res.sendStatus(200);
-									});
-							});
-						}
+							hipchat.sendMessage(
+								req.clientInfo,
+								req.identity.roomId,
+								'Status: <strong>' + status['status'] + '</strong>',
+								opts )
+								.then(function (data) {
+									res.sendStatus(200);
+								});
+						});
 					} else {
 						hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> does not exist.')
 							.then(function (data) {
