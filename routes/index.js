@@ -135,7 +135,7 @@ module.exports = function (app, addon) {
                           } else if (value.color === 'disabled'){
                             value.color = '#707070'
                           }
-                      }); 
+                      });
 
                       //render the sidebar
                       res.render('sidebar', {
@@ -150,9 +150,6 @@ module.exports = function (app, addon) {
       } else {
 		console.log('view name wasn\'t supplied');
       }
-
-
-			
 		}
 	);
 
@@ -304,27 +301,23 @@ module.exports = function (app, addon) {
 					if (exists) {
 						jenkins.job.get(job_name, function (err, data) {
 
-							var buildStatus = 'Failed';
-							var color = 'red';
-							if (data.lastBuild.number != data.lastCompletedBuild.number) {
-								buildStatus = 'In Progress';
-								color = 'yellow';
-							}
-							else {
-								if (data.lastCompletedBuild.number == data.lastSuccessfulBuild.number) {
-									buildStatus = 'Successful';
-									color = 'green';
-								}
+							var buildStatus = {
+								'red': 'Failed',
+								'green': 'Successful',
+								'yellow': 'In Progress',
+								'grey': 'Not Built'
+								};
+							if (data.color == 'blue') {
+								data.color = 'green';
 							}
 
-							var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
+							var opts = {'options': {'color': data.color, 'message_format': 'html', 'notify': 'false'}};
 
 							hipchat.sendMessage(
 								req.clientInfo,
 								req.identity.roomId,
-								'Status: <strong>' + buildStatus + '</strong>',
-								opts
-							)
+								'Status: <strong>' + buildStatus[data.color] + '</strong>',
+								opts )
 								.then(function (data) {
 									res.sendStatus(200);
 								});
