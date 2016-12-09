@@ -170,26 +170,31 @@ module.exports = function (app, addon) {
                 var username = req.body.item.message.from.mention_name;
 				var message = req.body.item.message.message;
 				var job_name = message.replace(/^\/ci build /, '');
+				var color = 'red';
                 if (job_name) {
                     jenkins.job.exists(job_name, function(err, exists) {
                         if (exists) {
                             jenkins.job.build(job_name, function (err, data) {
                                 if (err) throw err;
                                 console.log('queue item number', data);
-                                hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> has been successfully triggered!')
+	                            color = 'green'
+	                            var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
+                                hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> has been successfully triggered by <' + username + '>', opts)
                                     .then(function (data) {
                                         res.sendStatus(200);
                                     });
                             });
                         } else {
-                            hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> does not exist.')
+	                        var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
+                            hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> does not exist.', opts)
                                 .then(function (data) {
                                     res.sendStatus(200);
                                 });
                         }
                     });
                 } else {
-                    hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> is invalid.')
+	                var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
+                    hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> is invalid.', opts)
                         .then(function (data) {
                             res.sendStatus(200);
                         });
