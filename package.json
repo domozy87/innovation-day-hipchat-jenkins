@@ -20,6 +20,7 @@
     "request": "^2.72.0",
     "rsvp": "^3.2.1",
     "static-expiry": "^0.0.11",
-    "uuid": "^2.0.2"
+    "uuid": "^2.0.2",
+    "atlassian-connect-express-redis": "~0.1.0"
   }
 }

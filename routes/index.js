@@ -2,6 +2,7 @@ var http = require('request');
 var cors = require('cors');
 var uuid = require('uuid');
 var url = require('url');
+var redis = require('atlassian-connect-express-redis');
 var jenkins = require('jenkins')({
 	baseUrl: 'https://stoplight:Pass0n16Dec2013@ci.web-essentials.asia'
 });
@@ -51,6 +52,10 @@ module.exports = function (app, addon) {
 			//   clientKey, oauth info, and HipChat account info
 			// * req.context: contains the context data accompanying the request like
 			//   the roomId
+
+
+
+
 			res.render('config', req.context);
 		}
 	);
@@ -106,6 +111,27 @@ module.exports = function (app, addon) {
 	app.get('/sidebar',
 		addon.authenticate(),
 		function (req, res) {
+      var username = req.body.item.message.from.mention_name;
+      var message = req.body.item.message.message;
+      var view_name = '014-701-we-infrastructure';
+
+      if (view_name) {
+          jenkins.view.exists(view_name, function(err, exists) {
+              if (exists) {
+                  jenkins.view.get(view_name, function (err, data) {
+                      if (err) throw err;
+                      console.log('data received:', data);
+
+                  });
+              } else {
+                
+              }
+          });
+      } else {
+        
+      }
+
+
 			res.render('sidebar', {
 				identity: req.identity
 			});
@@ -167,7 +193,7 @@ module.exports = function (app, addon) {
 		function (req, res) {
 
 			if (req.body.event === "room_message") {
-                var username = req.body.item.message.from.mention_name;
+        var username = req.body.item.message.from.mention_name;
 				var message = req.body.item.message.message;
 				var job_name = message.replace(/^\/ci build /, '');
 				var color = 'red';

@@ -75,9 +75,9 @@
     ],
     "webPanel": [
       {
-        "key": "sample.sidebar",
+        "key": "ci.sidebar",
         "name": {
-          "value": "Hello Sidebar!"
+          "value": "CI Status"
         },
         "location": "hipchat.sidebar.right",
         "url": "{{localBaseUrl}}/sidebar"
