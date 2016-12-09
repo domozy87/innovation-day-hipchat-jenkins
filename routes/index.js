@@ -25,7 +25,7 @@ module.exports = function (app, addon) {
 
 	var getJenkins = function (obj, username) {
 		var tokens = jenkinsToken.token;
-		
+
 		for(var i = 0; i < tokens.length; i++) {
 			if (tokens[i].username.toLowerCase() == username.toLowerCase()) {
 				jenkinsBaseUrl.username = username;
@@ -37,6 +37,27 @@ module.exports = function (app, addon) {
 			baseUrl: 'https://' + obj.username + ':' + obj.token + obj.domain
 		});
 		return jenkinsObject;
+	};
+
+	var getColorByStatus = function(status, color_index) {
+		console.log(status);
+		var statuses = {
+			'notbuilt': ['No Built', 'grey', '#f5f5f5'],
+			'disabled': ['Disabled', 'black', '#707070'],
+			'blue': ['Successful', 'green', '#14892c'],
+			'blue_anime': ['In Progress', 'yellow'],
+			'yellow': ['Unstable', 'yellow', 'yellow'],
+			'red': ['Failed', 'red', '#d04437'],
+			'aborted': ['Aborted', 'brown', 'brown']
+		};
+		if (color_index == undefined || statuses[color_index] == undefined || color_index < 1) {
+			color_index = 1;
+		}
+		return {
+			'code': status,
+			'status': statuses[status][0],
+			'color': statuses[status][color_index]
+		};
 	};
 
 	// simple healthcheck
@@ -148,15 +169,8 @@ module.exports = function (app, addon) {
 
 					          //change the colours of the job status, as Jenkins defaults are shit
 					          _.forEach(freestyleJobs, function(value, key){
-					              if(value.color === 'blue'){
-					                value.color = '#14892c';
-					              } else if (value.color === 'notbuilt'){
-					                value.color = '#f5f5f5'
-					              } else if (value.color === 'red'){
-					                value.color = '#d04437'
-					              } else if (value.color === 'disabled'){
-					                value.color = '#707070'
-					              }
+						          var statusColor = getColorByStatus(value.color,2);
+						          value.color = statusColor['color'];
 					          });
 
 					          //don't care about the /All on the end of the 'view' name. Handling internally only
@@ -345,22 +359,14 @@ module.exports = function (app, addon) {
 					if (exists) {
 						jenkins.job.get(job_name, function (err, data) {
 
-							var buildStatus = {
-								'red': 'Failed',
-								'green': 'Successful',
-								'yellow': 'In Progress',
-								'grey': 'Not Built'
-							};
-							if (data.color == 'blue') {
-								data.color = 'green';
-							}
+							var status = getColorByStatus(data.color);
 
-							var opts = {'options': {'color': data.color, 'message_format': 'html', 'notify': 'false'}};
+							var opts = {'options': {'color': status['color'], 'message_format': 'html', 'notify': 'false'}};
 
 							hipchat.sendMessage(
 								req.clientInfo,
 								req.identity.roomId,
-								'Status: <strong>' + buildStatus[data.color] + '</strong>',
+								'Status: <strong>' + status['status'] + '</strong>',
 								opts )
 								.then(function (data) {
 									res.sendStatus(200);
