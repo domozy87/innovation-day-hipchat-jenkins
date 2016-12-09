@@ -18,3 +18,8 @@
 .aui-connect-content:last-child {
   display: block;
 }
+
+
+.aui-connect-list-item-title {
+	margin-left: 20px
+}
