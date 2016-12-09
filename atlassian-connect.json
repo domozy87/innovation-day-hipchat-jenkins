@@ -37,6 +37,13 @@
         "authentication": "jwt"
       },
       {
+        "url": "{{localBaseUrl}}/hello",
+        "pattern": "^/[Hh][Ee][Ll][Ll][Oo]",
+        "event": "room_message",
+        "name": "Hello",
+        "authentication": "jwt"
+      },
+      {
         "url": "{{localBaseUrl}}/build",
         "pattern": "^/[Cc][Ii] [Bb][Uu][Ii][Ll][Dd] .+",
         "event": "room_message",
