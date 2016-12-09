@@ -3,6 +3,7 @@ var cors = require('cors');
 var uuid = require('uuid');
 var url = require('url');
 var redis = require('atlassian-connect-express-redis');
+var _ = require('lodash');
 var jenkins = require('jenkins')({
 	baseUrl: 'https://stoplight:Pass0n16Dec2013@ci.web-essentials.asia'
 });
@@ -69,15 +70,16 @@ module.exports = function (app, addon) {
 			res.json({
 				"label": {
 					"type": "html",
-					"value": "Hello World!"
-				},
-				"status": {
-					"type": "lozenge",
-					"value": {
-						"label": "NEW",
-						"type": "error"
-					}
+					"value": "CI Status"
 				}
+        // ,
+				// "status": {
+				// 	"type": "lozenge",
+				// 	"value": {
+				// 		"label": "NEW",
+				// 		"type": "error"
+				// 	}
+				// }
 			});
 		}
 	);
@@ -86,42 +88,62 @@ module.exports = function (app, addon) {
 	// Room update API: https://www.hipchat.com/docs/apiv2/method/room_addon_ui_update
 	// Group update API: https://www.hipchat.com/docs/apiv2/method/addon_ui_update
 	// User update API: https://www.hipchat.com/docs/apiv2/method/user_addon_ui_update
-	app.post('/update_glance',
-		cors(),
-		addon.authenticate(),
-		function (req, res) {
-			res.json({
-				"label": {
-					"type": "html",
-					"value": "Hello World!"
-				},
-				"status": {
-					"type": "lozenge",
-					"value": {
-						"label": "All good",
-						"type": "success"
-					}
-				}
-			});
-		}
-	);
+	// app.post('/update_glance',
+	// 	cors(),
+	// 	addon.authenticate(),
+	// 	function (req, res) {
+	// 		res.json({
+	// 			"label": {
+	// 				"type": "html",
+	// 				"value": "Hello World!"
+	// 			},
+	// 			"status": {
+	// 				"type": "lozenge",
+	// 				"value": {
+	// 					"label": "All good",
+	// 					"type": "success"
+	// 				}
+	// 			}
+	// 		});
+	// 	}
+	// );
 
 	// This is an example sidebar controller that can be launched when clicking on the glance.
 	// https://developer.atlassian.com/hipchat/guide/dialog-and-sidebar-views/sidebar
 	app.get('/sidebar',
 		addon.authenticate(),
 		function (req, res) {
-      var username = req.body.item.message.from.mention_name;
-      var message = req.body.item.message.message;
-      var view_name = '014-701-we-infrastructure';
+      var view_name = '014-701-we-infrastructure/All';
 
       if (view_name) {
           jenkins.view.exists(view_name, function(err, exists) {
               if (exists) {
                   jenkins.view.get(view_name, function (err, data) {
                       if (err) throw err;
-                      console.log('data received:', data);
+                      // console.log('data received:', data);
 
+                      //only get the freestyle jobs for now
+                      var freestyleJobs = _.filter(data.jobs, ['_class', 'hudson.model.FreeStyleProject']);
+
+                      //change the colours of the job status, as Jenkins defaults are shit
+                      _.forEach(freestyleJobs, function(value, key){
+                          if(value.color === 'blue'){
+                            value.color = '#14892c';
+                          } else if (value.color === 'notbuilt'){
+                            value.color = '#f5f5f5'
+                          } else if (value.color === 'red'){
+                            value.color = '#d04437'
+                          } else if (value.color === 'disabled'){
+                            value.color = '#707070'
+                          }
+                      }); 
+
+                      console.log(freestyleJobs);
+
+                      res.render('sidebar', {
+                          identity: req.identity,
+                          jobs: freestyleJobs
+                      });
                   });
               } else {
                   console.log('view does not exist');
@@ -132,11 +154,10 @@ module.exports = function (app, addon) {
       }
 
 
-			res.render('sidebar', {
-				identity: req.identity
-			});
+			
 		}
 	);
+
 
 	// This is an example dialog controller that can be launched when clicking on the glance.
 	// https://developer.atlassian.com/hipchat/guide/dialog-and-sidebar-views/dialog
