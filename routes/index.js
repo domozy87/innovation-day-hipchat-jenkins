@@ -4,9 +4,6 @@ var uuid = require('uuid');
 var url = require('url');
 var redis = require('atlassian-connect-express-redis');
 var _ = require('lodash');
-var jenkins = require('jenkins')({
-	baseUrl: 'https://stoplight:Pass0n16Dec2013@ci.web-essentials.asia'
-});
 var jenkins = undefined;
 var jenkinsBaseUrl = {
 	username: '',
@@ -294,9 +291,10 @@ module.exports = function (app, addon) {
 		addon.authenticate(),
 		function (req, res) {
 			var message = req.body.item.message.message.toLowerCase();
+			var username = req.body.item.message.from.mention_name;
 			var job_name = message.replace(/^\/ci status /, '');
-
 			if (job_name) {
+				jenkins = getJenkins(jenkinsBaseUrl, username);
 				jenkins.job.exists(job_name, function (err, exists) {
 					if (exists) {
 						jenkins.job.get(job_name, function (err, data) {
