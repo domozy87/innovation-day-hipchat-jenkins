@@ -340,64 +340,32 @@ module.exports = function (app, addon) {
 			var username = req.body.item.message.from.mention_name;
 			var job_name = message.replace(/^\/ci status /, '');
 			if (job_name) {
-				var buildNo = '';
-				var job_names = job_name.split(/\s+/);
-				if (job_names.length === 2) {
-					job_name = job_names[0];
-					buildNo = job_names[1];
-				}
 				jenkins = getJenkins(jenkinsBaseUrl, username);
 				jenkins.job.exists(job_name, function (err, exists) {
 					if (exists) {
-						if (buildNo.length) {
-							jenkins.build.get(job_name, buildNo, function (err, data) {
-								console.log(data);
-								var buildStatus = {
-									'red': 'Failed',
-									'green': 'Successful',
-									'yellow': 'In Progress',
-									'grey': 'Not Built'
-								};
-								if (data.color == 'blue') {
-									data.color = 'green';
-								}
+						jenkins.job.get(job_name, function (err, data) {
 
-								var opts = {'options': {'color': data.color, 'message_format': 'html', 'notify': 'false'}};
+							var buildStatus = {
+								'red': 'Failed',
+								'green': 'Successful',
+								'yellow': 'In Progress',
+								'grey': 'Not Built'
+							};
+							if (data.color == 'blue') {
+								data.color = 'green';
+							}
 
-								hipchat.sendMessage(
-									req.clientInfo,
-									req.identity.roomId,
-									'Status: <strong>' + buildStatus[data.color] + '</strong>',
-									opts )
-									.then(function (data) {
-										res.sendStatus(200);
-									});
-							});
-						} else {
-							jenkins.job.get(job_name, function (err, data) {
+							var opts = {'options': {'color': data.color, 'message_format': 'html', 'notify': 'false'}};
 
-								var buildStatus = {
-									'red': 'Failed',
-									'green': 'Successful',
-									'yellow': 'In Progress',
-									'grey': 'Not Built'
-								};
-								if (data.color == 'blue') {
-									data.color = 'green';
-								}
-
-								var opts = {'options': {'color': data.color, 'message_format': 'html', 'notify': 'false'}};
-
-								hipchat.sendMessage(
-									req.clientInfo,
-									req.identity.roomId,
-									'Status: <strong>' + buildStatus[data.color] + '</strong>',
-									opts )
-									.then(function (data) {
-										res.sendStatus(200);
-									});
-							});
-						}
+							hipchat.sendMessage(
+								req.clientInfo,
+								req.identity.roomId,
+								'Status: <strong>' + buildStatus[data.color] + '</strong>',
+								opts )
+								.then(function (data) {
+									res.sendStatus(200);
+								});
+						});
 					} else {
 						hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> does not exist.')
 							.then(function (data) {
