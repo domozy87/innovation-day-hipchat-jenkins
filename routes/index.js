@@ -13,6 +13,12 @@ var jenkins = require('jenkins')({
 module.exports = function (app, addon) {
 	var hipchat = require('../lib/hipchat')(addon);
 
+	var DELIMITER = '.';
+
+	function generateIdentifier(req) {
+	    return req.clientInfo.clientKey.concat(DELIMITER).concat(req.clientInfo.roomId.toString());
+	}
+
 	// simple healthcheck
 	app.get('/healthcheck', function (req, res) {
 		res.send('OK');
@@ -54,10 +60,25 @@ module.exports = function (app, addon) {
 			// * req.context: contains the context data accompanying the request like
 			//   the roomId
 
+			var key = generateIdentifier(req);
+			addon.settings.get('projectName', key).then(function(name) {
+			
+			if(!name) {
+			  res.render('config', {});
+			  return;
+			}
 
+			console.log(name);
 
+			//remove the need for the user to type /All in, handle that in the background
+			name = name.replace('/All', '');
 
-			res.render('config', req.context);
+			console.log(name);
+
+			res.render('config', {
+				projectName: name
+			  });
+			});
 		}
 	);
 
@@ -113,45 +134,67 @@ module.exports = function (app, addon) {
 	app.get('/sidebar',
 		addon.authenticate(),
 		function (req, res) {
-      var view_name = '014-701-we-infrastructure/All';
 
-      if (view_name) {
-          jenkins.view.exists(view_name, function(err, exists) {
-              if (exists) {
-                  jenkins.view.get(view_name, function (err, data) {
-                      if (err) throw err;
+			var key = generateIdentifier(req);
+			addon.settings.get('projectName', key).then(function(name){
 
-                      //only get the freestyle jobs for now
-                      var freestyleJobs = _.filter(data.jobs, ['_class', 'hudson.model.FreeStyleProject']);
+				console.log ('rendering sidebar with ' + name);
 
-                      //change the colours of the job status, as Jenkins defaults are shit
-                      _.forEach(freestyleJobs, function(value, key){
-                          if(value.color === 'blue'){
-                            value.color = '#14892c';
-                          } else if (value.color === 'notbuilt'){
-                            value.color = '#f5f5f5'
-                          } else if (value.color === 'red'){
-                            value.color = '#d04437'
-                          } else if (value.color === 'disabled'){
-                            value.color = '#707070'
-                          }
-                      });
+				if (name) {
+					jenkins.view.exists(name, function(err, exists) {
+					  if (exists) {
+					      jenkins.view.get(name, function (err, data) {
+					          if (err) throw err;
 
-                      //render the sidebar
-                      res.render('sidebar', {
-                          identity: req.identity,
-                          jobs: freestyleJobs
-                      });
-                  });
-              } else {
-                  console.log('view does not exist');
-              }
-          });
-      } else {
-		console.log('view name wasn\'t supplied');
-      }
+					          //only get the freestyle jobs for now
+					          var freestyleJobs = _.filter(data.jobs, ['_class', 'hudson.model.FreeStyleProject']);
+
+					          //change the colours of the job status, as Jenkins defaults are shit
+					          _.forEach(freestyleJobs, function(value, key){
+					              if(value.color === 'blue'){
+					                value.color = '#14892c';
+					              } else if (value.color === 'notbuilt'){
+					                value.color = '#f5f5f5'
+					              } else if (value.color === 'red'){
+					                value.color = '#d04437'
+					              } else if (value.color === 'disabled'){
+					                value.color = '#707070'
+					              }
+					          });
+
+					          //don't care about the /All on the end of the 'view' name. Handling internally only
+					          name = name.replace('/All', '');
+
+					          //render the sidebar
+					          res.render('sidebar', {
+					              identity: req.identity,
+					              jobs: freestyleJobs,
+					              projectName: name
+					          });
+					      });
+					  } else {
+					      console.log('view does not exist');
+					  }
+					});
+					
+				} else {
+					console.log('view name wasn\'t supplied');
+				}
+			});
 		}
 	);
+
+	app.post('/configure-project-name',
+	    addon.authenticate(),
+	    function(req, res) {
+	      	var key = generateIdentifier(req);
+	      	var projectName = req.body['projectname'] + '/All';
+        
+          	addon.settings.set('projectName', projectName, generateIdentifier(req)).then(function(){
+	        	res.redirect('/config?signed_request=' + req.query['signed_request']);
+	        });
+	    }
+	  );
 
 
 	// This is an example dialog controller that can be launched when clicking on the glance.

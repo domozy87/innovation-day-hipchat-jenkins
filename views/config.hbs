@@ -1,6 +1,14 @@
 {{!< layout}}
-<div class="aui-group">
-  <div class="aui-item">
-    <h3>Here's your config page. Now get to work!</h3>
-  </div>
+<script src="{{localBaseUrl}}/js/addon.js"></script>
+<div class="aui-group ci-config-page">
+    <div class="aui-item">
+        <div class="ci-config-step">
+            <span class="ci-config-step-header ci-config-greyed-out" id="ci-config-step-header-two">Enter Jenkins Project Name</span>
+            <form class="aui ci-config-form" id="ci-config-survey-names-form" action="configure-project-name?signed_request={{signed_request}}" method="post">
+                <input type="text" class="text long-field" name="projectname" id="ci-config-project-name-input" value="{{projectName}}">
+                <br><br>
+                <input class="aui-button aui-button-primary submit" id="ci-config-save-button" type="submit" value="Save">
+            </form>
+        </div>
+    </div>
 </div>

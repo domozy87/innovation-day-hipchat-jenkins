@@ -21,5 +21,14 @@
 
 
 .aui-connect-list-item-title {
-	margin-left: 20px
+	margin-left: 24px
+}
+
+
+#project-name-sidebar-header {
+	color: #333;
+    font-family: Arial, sans-serif  !important;
+    font-size: 24px;
+    line-height: 32px;
+    margin:20px;
 }
