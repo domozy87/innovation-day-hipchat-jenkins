@@ -7,11 +7,33 @@ var _ = require('lodash');
 var jenkins = require('jenkins')({
 	baseUrl: 'https://stoplight:Pass0n16Dec2013@ci.web-essentials.asia'
 });
+var jenkins = undefined;
+var jenkinsBaseUrl = {
+	username: '',
+	token: '',
+	domain: '@ci.web-essentials.asia'
+};
+var jenkinsToken = require('../jenkinsToken');
 
 // This is the heart of your HipChat Connect add-on. For more information,
 // take a look at https://developer.atlassian.com/hipchat/tutorials/getting-started-with-atlassian-connect-express-node-js
 module.exports = function (app, addon) {
 	var hipchat = require('../lib/hipchat')(addon);
+
+	var getJenkins = function (obj, username) {
+		var tokens = jenkinsToken.token;
+		for(var i = 0; i < tokens.length; i++) {
+			if (tokens[i].username.toLowerCase() == username.toLowerCase()) {
+				jenkinsBaseUrl.username = username;
+				jenkinsBaseUrl.token = tokens[i].token;
+				break;
+			}
+		}
+		var jenkinsObject = require('jenkins')({
+			baseUrl: 'https://' + obj.username + ':' + obj.token + obj.domain
+		});
+		return jenkinsObject;
+	};
 
 	// simple healthcheck
 	app.get('/healthcheck', function (req, res) {
@@ -83,30 +105,6 @@ module.exports = function (app, addon) {
 			});
 		}
 	);
-
-	// This is an example end-point that you can POST to to update the glance info
-	// Room update API: https://www.hipchat.com/docs/apiv2/method/room_addon_ui_update
-	// Group update API: https://www.hipchat.com/docs/apiv2/method/addon_ui_update
-	// User update API: https://www.hipchat.com/docs/apiv2/method/user_addon_ui_update
-	// app.post('/update_glance',
-	// 	cors(),
-	// 	addon.authenticate(),
-	// 	function (req, res) {
-	// 		res.json({
-	// 			"label": {
-	// 				"type": "html",
-	// 				"value": "Hello World!"
-	// 			},
-	// 			"status": {
-	// 				"type": "lozenge",
-	// 				"value": {
-	// 					"label": "All good",
-	// 					"type": "success"
-	// 				}
-	// 			}
-	// 		});
-	// 	}
-	// );
 
 	// This is an example sidebar controller that can be launched when clicking on the glance.
 	// https://developer.atlassian.com/hipchat/guide/dialog-and-sidebar-views/sidebar
@@ -217,47 +215,49 @@ module.exports = function (app, addon) {
       }
     });
 
-  // This is an example route to handle an incoming webhook
-  // https://developer.atlassian.com/hipchat/guide/webhooks
-  app.post('/build',
-    addon.authenticate(),
-    function (req, res) {
-
-      if (req.body.event === "room_message") {
-        var username = req.body.item.message.from.mention_name;
-        var message = req.body.item.message.message;
-        var job_name = message.replace(/^\/ci build /, '');
-        var color = 'red';
-        if (job_name) {
-          jenkins.job.exists(job_name, function (err, exists) {
-            if (exists) {
-              jenkins.job.build(job_name, function (err, data) {
-                if (err) throw err;
-                console.log('queue item number', data);
-                color = 'green'
-                var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
-                hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> has been successfully triggered by <' + username + '>', opts)
-                  .then(function (data) {
-                    res.sendStatus(200);
-                  });
-              });
-            } else {
-              var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
-              hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> does not exist.', opts)
-                .then(function (data) {
-                  res.sendStatus(200);
-                });
-            }
-          });
-        } else {
-          var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
-          hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> is invalid.', opts)
-            .then(function (data) {
-              res.sendStatus(200);
-            });
-        }
-      }
-    });
+	// This is an example route to handle an incoming webhook
+	// https://developer.atlassian.com/hipchat/guide/webhooks
+	app.post('/build',
+		addon.authenticate(),
+		function (req, res) {
+			if (req.body.event === "room_message") {
+                var username = req.body.item.message.from.mention_name;
+				var message = req.body.item.message.message;
+				var job_name = message.replace(/^\/ci build /, '');
+				var color = 'red';
+                if (job_name) {
+					jenkins = getJenkins(jenkinsBaseUrl, username);
+					if (jenkinsBaseUrl.username != '' && jenkinsBaseUrl.token != '') {
+		                jenkins.job.exists(job_name, function(err, exists) {
+			                if (exists) {
+				                jenkins.job.build(job_name, function (err, data) {
+					                if (err) throw err;
+					                console.log('queue item number', data);
+					                color = 'green';
+					                var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
+					                hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> has been successfully triggered by <' + username + '>', opts)
+						                .then(function (data) {
+							                res.sendStatus(200);
+						                });
+				                });
+			                } else {
+				                var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
+				                hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> does not exist.', opts)
+					                .then(function (data) {
+						                res.sendStatus(200);
+					                });
+			                }
+		                });
+	                }
+                } else {
+	                var opts = {'options': {'color': color, 'message_format': 'html', 'notify': 'false'}};
+                    hipchat.sendMessage(req.clientInfo, req.identity.roomId, 'Job name <' + job_name + '> is invalid.', opts)
+                        .then(function (data) {
+                            res.sendStatus(200);
+                        });
+                }
+			}
+		});
 
   // This is an example route to handle an incoming webhook
   // https://developer.atlassian.com/hipchat/guide/webhooks
