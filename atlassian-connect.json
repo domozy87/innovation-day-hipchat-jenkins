@@ -1,127 +1,125 @@
 {
-  "key": "we-hipchat-jenkins",
-  "name": "Hipchat to Jenkins",
-  "description": "HipChat integration for Jenkins.",
-  "vendor": {
-    "name": "Web Essentials",
-    "url": "http://www.web-essentials.asia"
-  },
-  "links": {
-    "self": "{{localBaseUrl}}/atlassian-connect.json",
-    "homepage": "{{localBaseUrl}}"
-  },
-  "capabilities": {
-    "hipchatApiConsumer": {
-      "scopes": [
-        "send_notification",
-        "view_room"
-      ],
-      "avatar": {
-        "url": "{{localBaseUrl}}/img/logo.png",
-        "url@2x": "{{localBaseUrl}}/img/logo.png"
-      }
-    },
-    "installable": {
-      "callbackUrl": "{{localBaseUrl}}/installable"
-    },
-    "configurable": {
-      "url": "{{localBaseUrl}}/config"
-    },
-
-    "webhook": [
-      {
-        "url": "{{localBaseUrl}}/hi",
-        "pattern": "^/[Hh][Ii]",
-        "event": "room_message",
-        "name": "Hi",
-        "authentication": "jwt"
-      },
-      {
-        "url": "{{localBaseUrl}}/hello",
-        "pattern": "^/[Hh][Ee][Ll][Ll][Oo]",
-        "event": "room_message",
-        "name": "Hello",
-        "authentication": "jwt"
-      },
-      {
-        "url": "{{localBaseUrl}}/build",
-        "pattern": "^/[Cc][Ii] [Bb][Uu][Ii][Ll][Dd] .+",
-        "event": "room_message",
-        "name": "Build",
-        "authentication": "jwt"
-      },
-      {
-        "url": "{{localBaseUrl}}/deploy",
-        "pattern": "^/[Cc][Ii] [Dd][Ee][Pp][Ll][Oo][Yy] .+",
-        "event": "room_message",
-        "name": "Deploy",
-        "authentication": "jwt"
-      },
-      {
-        "url": "{{localBaseUrl}}/status",
-        "pattern": "^/[Cc][Ii] [Ss][Tt][Aa][Tt][Uu][Ss] .+",
-        "event": "room_message",
-        "name": "Status",
-        "authentication": "jwt"
-      }
-    ],
-
-    "glance": [
-      {
-        "name": {
-          "value": "CI Status"
-        },
-        "queryUrl": "{{localBaseUrl}}/glance",
-        "key": "sample.glance",
-        "target": "ci.sidebar",
-        "icon": {
-          "url": "{{localBaseUrl}}/img/logo.png",
-          "url@2x": "{{localBaseUrl}}/img/logo.png"
-        }
-      }
-    ],
-    "webPanel": [
-      {
-        "key": "ci.sidebar",
-        "name": {
-          "value": "CI Status"
-        },
-        "location": "hipchat.sidebar.right",
-        "url": "{{localBaseUrl}}/sidebar"
-      }
-    ],
-    "dialog": [
-      {
-        "key": "sample.dialog",
-        "title": {
-          "value": "Hello Dialog!"
-        },
-        "url": "{{localBaseUrl}}/dialog",
-        "options": {
-          "style": "normal",
-          "primaryAction": {
-            "name": {
-              "value": "Say Hello!"
-            },
-            "key": "sample.dialog.action",
-            "enabled": true
-          },
-          "size": {
-            "width": "400px",
-            "height": "200px"
-          }
-        }
-      }
-    ],
-    "action": [
-      {
-        "key": "sample.action",
-        "name": {
-          "value": "Open Hello Dialog!"
-        },
-        "target": "sample.dialog",
-        "location": "hipchat.input.action"
-      }
-    ]
-  }
+	"key": "we-hipchat-jenkins",
+	"name": "Hipchat to Jenkins",
+	"description": "HipChat integration for Jenkins.",
+	"vendor": {
+		"name": "Web Essentials",
+		"url": "http://www.web-essentials.asia"
+	},
+	"links": {
+		"self": "{{localBaseUrl}}/atlassian-connect.json",
+		"homepage": "{{localBaseUrl}}"
+	},
+	"capabilities": {
+		"hipchatApiConsumer": {
+			"scopes": [
+				"send_notification",
+				"view_room"
+			],
+			"avatar": {
+				"url": "{{localBaseUrl}}/img/logo.png",
+				"url@2x": "{{localBaseUrl}}/img/logo.png"
+			}
+		},
+		"installable": {
+			"callbackUrl": "{{localBaseUrl}}/installable"
+		},
+		"configurable": {
+			"url": "{{localBaseUrl}}/config"
+		},
+		"webhook": [
+			{
+				"url": "{{localBaseUrl}}/hi",
+				"pattern": "^/[Hh][Ii]",
+				"event": "room_message",
+				"name": "Hi",
+				"authentication": "jwt"
+			},
+			{
+				"url": "{{localBaseUrl}}/hello",
+				"pattern": "^/[Hh][Ee][Ll][Ll][Oo]",
+				"event": "room_message",
+				"name": "Hello",
+				"authentication": "jwt"
+			},
+			{
+				"url": "{{localBaseUrl}}/build",
+				"pattern": "^/[Cc][Ii] [Bb][Uu][Ii][Ll][Dd] .+",
+				"event": "room_message",
+				"name": "Build",
+				"authentication": "jwt"
+			},
+			{
+				"url": "{{localBaseUrl}}/deploy",
+				"pattern": "^/[Cc][Ii] [Dd][Ee][Pp][Ll][Oo][Yy] .+",
+				"event": "room_message",
+				"name": "Deploy",
+				"authentication": "jwt"
+			},
+			{
+				"url": "{{localBaseUrl}}/status",
+				"pattern": "^/[Cc][Ii] [Ss][Tt][Aa][Tt][Uu][Ss] .+",
+				"event": "room_message",
+				"name": "Status",
+				"authentication": "jwt"
+			}
+		],
+		"glance": [
+			{
+				"name": {
+					"value": "CI Status"
+				},
+				"queryUrl": "{{localBaseUrl}}/glance",
+				"key": "sample.glance",
+				"target": "ci.sidebar",
+				"icon": {
+					"url": "{{localBaseUrl}}/img/logo.png",
+					"url@2x": "{{localBaseUrl}}/img/logo.png"
+				}
+			}
+		],
+		"webPanel": [
+			{
+				"key": "ci.sidebar",
+				"name": {
+					"value": "CI Status"
+				},
+				"location": "hipchat.sidebar.right",
+				"url": "{{localBaseUrl}}/sidebar"
+			}
+		],
+		"dialog": [
+			{
+				"key": "sample.dialog",
+				"title": {
+					"value": "Hello Dialog!"
+				},
+				"url": "{{localBaseUrl}}/dialog",
+				"options": {
+					"style": "normal",
+					"primaryAction": {
+						"name": {
+							"value": "Say Hello!"
+						},
+						"key": "sample.dialog.action",
+						"enabled": true
+					},
+					"size": {
+						"width": "400px",
+						"height": "200px"
+					}
+				}
+			}
+		],
+		"action": [
+			{
+				"key": "sample.action",
+				"name": {
+					"value": "Open Hello Dialog!"
+				},
+				"target": "sample.dialog",
+				"location": "hipchat.input.action"
+			}
+		]
+	}
 }
